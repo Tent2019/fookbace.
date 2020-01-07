@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+  <head>    
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />        
+    <script src="/javascripts/jquery-3.4.1.min.js"></script>
+    <script src="/javascripts/script.js"></script>
+    <script src="https://kit.fontawesome.com/519b1a65da.js" crossorigin="anonymous"></script>    
+    <script>
+      $(document).ready(function() {               
+
+        // ===== refresh Posted ====== //
+        function refreshPosted(res) {
+          '<% for (i in arr_home_posted) { %>'                  
+            genPost('<%= arr_home_posted[i].idhome_posted %>', '<%= arr_home_posted[i].text_posted %>');                        
+          '<% } %>'
+        }  
+
+        // ===== load initiate Posted ====== //
+        $.ajax({
+            url: '/',
+            method: 'get',
+            success: function(res) {                             
+              refreshPosted(res);
+            }
+        })
+
+        // start >> action: posting -> posted //
+        function genPost(idhome_posted,text) {
+          if (text==='') { 
+            alert('Please type something')
+            return; 
+          }
+          // textarea
+          let x_posted_unit = $('<div class=posted_unit></div>');   
+          x_posted_unit.attr('id',idhome_posted);           
+          x_posted_unit.append($('<div class=posted_unit_image></div>').append($('<img src=<%= main_img %>>')));
+          x_posted_unit_update = $('<i id="update_posted" class="fas fa-pen-square"></i>');
+          x_posted_unit_delete = $('<i id="delete_posted" class="fas fa-trash-alt"></i>');
+          x_posted_unit_name = $('<div class="posted_unit_friend_name"><%= firstname+" "+nickname %></div>');
+          x_posted_unit_name.append(x_posted_unit_delete);
+          x_posted_unit_name.append(x_posted_unit_update);
+          x_posted_unit.append(x_posted_unit_name);                      
+          x_posted_unit.append('<div class=posted_unit_text>'+text+'</div>');  
+          
+          // UPDATE & DELETE
+          x_posted_unit_update.click(function() {
+            let x_retext = prompt('Edit post:',text);                 
+            if (x_retext === '') {
+              alert('Please type something')
+              return; 
+            } 
+            $.ajax({
+                url: '/update/'+x_posted_unit.attr('id')+'/'+x_retext,
+                method: 'get',
+                success: function(res) {                                                                                                
+                  location.reload();
+              }
+            })
+          })         
+
+          x_posted_unit_delete.click(function() {    
+            let x_confirm = prompt('Confirm:','Delete');                 
+            if (x_confirm === '') {
+              alert('Please type something')
+              return; 
+            } else if (x_confirm === 'Delete') {
+              $.ajax({
+                url: '/delete/'+x_posted_unit.attr('id'),
+                method: 'get',
+                success: function(res) {                                                                                                
+                  location.reload();
+                }
+              })
+            }
+          })            
+          
+          // extend          
+          x_posted_unit_extend_like = $('<div class="posted_unit_extend_like">');        
+          x_posted_unit_extend_like.append($('<img src="/images/like_icon.png">'));
+          x_posted_unit_extend_like.append($('<div>0 Like</div>'));
+          //>>like blink
+          x_posted_unit_extend_like.mouseover(function() {
+            $(this).css('background-color','#e6e6e6');
+            $(this).mouseleave(function() {
+              $(this).css('background-color', 'white');
+            })
+          })
+          x_posted_unit_extend_comment = $('<div class="posted_unit_extend_comment">');     
+          x_posted_unit_extend_comment.append($('<i class="fa fa-commenting" style="font-size:24px"></i>'));
+          x_posted_unit_extend_comment.append($('<div>Comment</div>'));
+          //>>comment blink
+          x_posted_unit_extend_comment.mouseover(function() {
+          $(this).css('background-color','#e6e6e6');
+          $(this).mouseleave(function() {
+          $(this).css('background-color', 'white');
+            })
+          })
+          x_posted_unit_extend = $('<div class="posted_unit_extend"></div>');           
+          x_posted_unit_extend.append(x_posted_unit_extend_like);
+          x_posted_unit_extend.append(x_posted_unit_extend_comment);
+          x_posted_unit.append(x_posted_unit_extend);
+
+          //drop
+          x_comment_zone = $('<div></div>');
+
+          x_drop_commented_unit_comment = $('<div class="drop_comment_unit"><div>');
+          x_drop_commented_unit_comment.append($('<img src=<%= main_img %>>'));
+          let x_comment_posted = $('<input type="text" placeholder="Write a comment"></input>'); 
+          x_drop_commented_unit_comment.append(x_comment_posted);
+
+          x_drop_comment = $('<div class="drop_comment"></div>');
+          x_drop_comment.append(x_comment_zone);
+          x_drop_comment.append(x_drop_commented_unit_comment);
+          x_posted_unit.append(x_drop_comment);          
+
+
+          // >> comment posted
+          let xx_comment_zone = x_comment_zone;
+          function addComment(str_comment) {
+            x_drop_commented_unit = $('<div class=drop_commented_unit></div>');
+            x_drop_commented_unit.append($('<img src="<%= main_img %>">'));
+            x_drop_commented_unit.append($('<div><a href="/"><%= firstname+" "+nickname+":   " %></a>'+str_comment+'</div>'));
+            xx_comment_zone.append(x_drop_commented_unit);                        
+          }
+          // ===== load initiate Comment ====== //
+          $.ajax({
+              url: '/'+x_posted_unit.attr('id'),
+              method: 'get',
+              success: function(res) {                                                                                                
+                for (i in res) {
+                  addComment(res[i].text_comment);
+                }                  
+            }
+          })
+
+          x_comment_posted.on('keypress', function(keyboard_button) {
+            let comment = $(this).val();
+            if(keyboard_button.which == 13) {        
+              if (comment==='') { 
+                alert('Please type something')
+                return; 
+              }              
+              // ===== add Comment ====== //                
+              $.ajax({
+                url: '/add/'+comment+'/'+x_posted_unit.attr('id'),
+                method: 'get',
+                success: function(res) {                                                             
+                  location.reload();
+                }
+              })
+              $(this).val('');
+              
+            }
+          })          
+                    
+          // final
+          $('#posted_zone').prepend(x_posted_unit);
+          $('#template_unit').val('');
+          $('#template_unit').css('height','45px');
+          $('#drop_post').hide();                                 
+        }
+        
+        // ===== add Posted ====== //
+        $('#post_button').click(function() {                   
+          let text =  $('#template_unit').val();              
+          if (text==='') { 
+            alert('Please type something')
+            return; 
+          }                              
+          $.ajax({
+            url: '/add/'+text,
+            method: 'get',
+            success: function(res) {                                                             
+              location.reload();              
+            }
+          })              
+
+        })       
+
+      })
+    </script>
+  </head>
+  <body>      
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header_unit_logo">                
+        <img src="/images/facebook_icon.png">
+      </div>
+      <!-- start search -->
+      <div id="search"  class="header_unit_search">
+        <input type="text" placeholder="Search">        
+        <button>
+            <i class="fa fa-search" style="font-size:15px; color: #999999;"></i>
+        </button>             
+        <a href="/users/zoro"><input id="search_drop" type="text" placeholder="Roronoa Zoro"></a> 
+      </div> <!-- end search -->
+      <div class="header_unit_image">
+        <img src="/images/tent.jpg">
+      </div>
+      <div class="header_unit"><%= firstname %></div>
+      <div class="header_unit"><a href="/">Home</a></div>
+      <div class="header_unit">Create</div>
+      <div class="header_unit"></div>
+    </div>    
+    <!-- NAV -->
+    <div class="nav">
+      <div class="nav_unit clickable"> 
+        <i class="fa fa-newspaper-o" style="font-size:24px"></i>
+        <div>News Feed</div>        
+      </div>
+      <div class="nav_unit clickable"> 
+        <i class='fas fa-comments' style='font-size:24px'></i>
+        <div>Messenger</div>        
+      </div>
+      <div class="nav_unit_mark">         
+        <div>Shortcuts</div>        
+      </div>
+      <div class="nav_unit clickable"> 
+          <i class='fas fa-users' style='font-size:24px'></i>
+        <div>Python-Thailand</div>        
+      </div>
+      <div class="nav_unit clickable"> 
+          <i class='fas fa-users' style='font-size:24px'></i>
+        <div>Jobs for Thai Programmer</div>        
+      </div>
+      <div class="nav_unit_mark">         
+          <div>Explore</div>        
+        </div>
+      <div class="nav_unit clickable"> 
+        <i class='fas fa-users' style='font-size:24px'></i>
+        <div>Groups</div>        
+      </div>
+      <div class="nav_unit clickable"> 
+          <i class='fas fa-file-powerpoint' style='font-size:24px'></i>
+        <div>Pages</div>        
+      </div>
+      <div class="nav_unit clickable"> 
+        <i class='fas fa-calendar-alt' style='font-size:24px'></i>
+        <div>Events</div>        
+      </div>
+      <div class="nav_unit clickable"> 
+        <i class='fas fa-poll-h' style='font-size:24px'></i>
+        <div>Saved</div>        
+      </div>
+    </div>
+
+    <div class="container">
+        <!-- CENTER -->
+        <div class="body_center">
+
+            <!-- POSTING -->
+            <!-- start post -->
+            <div id="post_unit" class="post_unit">
+              <div class="post_unit_header">Create Post</div>
+              <div class="post_unit_image">
+                <img src=<%= main_img %>>
+              </div>
+              <textarea id="template_unit"></textarea>
+              <!-- start drop -->
+              <div id="drop_post" class="post_unit_drop">
+                <div class="post_unit_drop_option">
+                  <div class="post_unit_drop_option_each">
+                      <i class='fas fa-image' style='font-size:24px'></i>
+                      <div>Photo</div>
+                  </div>
+                  <div class="post_unit_drop_option_each">
+                      <i class='fas fa-grin-beam' style='font-size:24px'></i>
+                      <div>Emoji</div>
+                  </div>
+                </div>                
+                <button id="post_button">Post</button>
+              </div><!-- end drop -->
+            </div> <!-- end posting -->
+
+            <!-- POSTED -->
+            <div id="posted_zone">
+
+              <!-- start posted uit -->
+              <div class="posted_unit">
+                  <div class="posted_unit_image">
+                      <img src=<%= main_img %>>
+                  </div>
+                  <div class="posted_unit_friend_name"><%= firstname+' '+nickname %>
+                    <i id="delete_posted" class="fas fa-trash-alt"></i>
+                    <i id="update_posted" class="fas fa-pen-square"></i>                    
+                  </div>                  
+                  <div class="posted_unit_text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit alias error illum provident neque. Cum officia fuga odio saepe, excepturi dolorem debitis esse eveniet nihil eaque, soluta similique blanditiis ut?</div>                  
+                  <div class="posted_unit_photo">
+                    <img src="/images/photo1.jpg">
+                  </div>                
+                  <div class="posted_unit_extend">
+                    <div class="posted_unit_extend_like">
+                      <img src="/images/like_icon.png">
+                      <div>99 Like</div>
+                    </div>
+                    <div class="posted_unit_extend_comment">
+                      <i class="fa fa-commenting" style="font-size:24px"></i>
+                      <div>Comment</div>
+                    </div>                        
+                  </div>
+                  <!-- start drop -->
+                  <div class="drop_comment">
+                      <div class="drop_commented_unit">
+                        <img src="/images/zoro00.jpg">
+                        <div><a href="/users/zoro">Roronoa Zoro</a>: ipsum dolor sit amet consectetur.</div>                      
+                      </div>
+                      <div class="drop_commented_unit">
+                        <img src="/images/tent.jpg">
+                        <div><a href="/">Kittipong Tent</a>: ipsum.</div>                      
+                      </div>
+                      <div class="drop_commented_unit">
+                        <img src="/images/zoro00.jpg">
+                        <div><a href="/users/zoro">Roronoa Zoro</a>: ipsum dolor sit.</div>                      
+                      </div>
+                      <div class="drop_comment_unit">
+                        <img src="/images/tent.jpg">
+                        <input id="comment_posted" type="text" placeholder="Write a comment"></input>
+                      </div>
+                  </div> <!-- end drop -->
+              </div> <!-- end posted unit -->              
+
+            </div><!-- end posted zone -->
+        </div> <!-- end body center -->
+        
+        <!-- RIGHT -->
+        <div class="body_right">          
+          <div class="nav_unit_mark">         
+            <div>Popular Pakemon</div>            
+          </div>
+          <div class="pokemon">
+            <div class="nav_unit_dist"><img src="/images/pokemon1.webp"></div> 
+            <div class="nav_unit_dist"><img src="/images/pokemon2.webp"></div> 
+            <div class="nav_unit_dist"><img src="/images/pokemon3.webp"></div> 
+            <div class="nav_unit_dist"><img src="/images/pokemon4.webp"></div> 
+            <div class="nav_unit_dist"><img src="/images/pokemon5.webp"></div> 
+            <div class="nav_unit_dist"><img src="/images/pokemon6.webp"></div>             
+          </div>
+          
+          
+          <div class="nav_unit_mark">         
+            <div>People You May Know</div>            
+          </div>        
+          <div class="nav_unit_dist"><img src="/images/onepiece1.webp"></div>              
+          <div class="nav_unit_dist"><img src="/images/onepiece2.webp"></div>              
+          <div class="nav_unit_dist"><img src="/images/onepiece3.webp"></div>              
+          <div class="nav_unit_dist"><img src="/images/onepiece4.webp"></div>              
+          <div class="nav_unit_dist"><img src="/images/onepiece5.webp"></div>              
+          <div class="nav_unit_dist"><img src="/images/onepiece6.webp"></div> 
+        </div>          
+      </div>    
+  </body>
+</html>

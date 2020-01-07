@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>    
+    <title><%= firstname+' '+nickname %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />            
+    <script src="/javascripts/jquery-3.4.1.min.js"></script>
+    <script src="/javascripts/script.js"></script>
+    <script src="https://kit.fontawesome.com/519b1a65da.js" crossorigin="anonymous"></script>    
+    <script>
+      $(document).ready(function() {     
+
+        // icon follow
+        function iconFollow(bool) {
+          if (bool === true) {
+            $('#follow i').attr('class','fas fa-check');
+            $('#follow div').text('Following'); 
+          } else {
+            $('#follow i').attr('class','fas fa-user-plus');
+            $('#follow div').text('Follow');
+          }
+        }
+
+        // load icon follow
+        let isFollow;
+        $.ajax({
+          url: '/users/zoro',
+          method: 'get',
+          success: function(res) {                             
+            isFollow = '<%= isfollow %>'== 1 ? true : false           
+            iconFollow(isFollow)            
+          }
+        })
+
+        // ==== follow button ===== ***********        
+        $('#follow').click(function() {          
+                
+          if (isFollow === false) {
+            isFollow = true;
+            $.ajax({
+                url: '/users/zoro/follow/'+1,
+                method: 'get',
+                success: function(res) {                                                                                                
+                  location.reload();
+              }
+            })
+            
+          } else {
+            isFollow = false;
+            $.ajax({
+                url: '/users/zoro/follow/'+0,
+                method: 'get',
+                success: function(res) {                                                                                                
+                  location.reload();
+              }
+            })
+            
+          }
+          
+        
+          
+        })        
+
+      })
+    </script>
+  </head>
+  <body>      
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header_unit_logo">                
+        <img src="/images/facebook_icon.png">
+      </div>
+      <div class="header_unit_search">
+        <input type="text" placeholder="Search">
+        <button>
+            <i class="fa fa-search" style="font-size:15px; color: #999999;"></i>
+        </button>
+      </div>
+      <div class="header_unit_image">
+        <img src="/images/tent.jpg">
+      </div>
+      <div class="header_unit">Kittipong</div>
+      <div class="header_unit"><a href="/">Home</a></div>
+      <div class="header_unit">Create</div>
+      <div class="header_unit"></div>
+    </div>
+
+    <!-- NAV -->
+    <div class="nav nav_follow">      
+      <img src="/images/zoro00.jpg">
+      <div class="nav_unit_name_follow">Roronoa Zoro</div>
+      <div class="nav_unit">        
+        <p class="about_me">About me</p>        
+        <i class="fas fa-globe-europe" style='font-size:24px'></i>
+        <div class="about_me_sub">Career: <span>Swordman</span></div>        
+        <i class="fas fa-hryvnia" style='font-size:24px'></i>
+        <div class="about_me_sub">Bounty: <span>300 million bery</span></div>        
+        <i class='fas fa-users' style='font-size:24px'></i>
+        <div class="about_me_sub">Party: <span>Strawhat pirate</span></div>        
+        <i class="fas fa-ship" style='font-size:24px'></i>
+        <div class="about_me_sub">Ship: <span>Thousand sunny</span></div>        
+        <i class="fas fa-home" style='font-size:24px'></i>
+        <div class="about_me_sub">Home town: <span>East blue</span></div>        
+      </div>
+    </div>      
+
+    <div class="container">
+        <!-- CENTER -->
+        <div class="body_center">
+
+            <!-- start post -->
+            <div id="post_unit" class="post_unit">
+              <div class="post_unit_header">Create Post</div>
+              <div class="post_unit_image">
+                <img src=<%= userimg %>>
+              </div>
+              <textarea id="template_unit"></textarea>
+              <!-- start drop -->
+              <div id="drop_post" class="post_unit_drop">
+                <div class="post_unit_drop_option">
+                  <div class="post_unit_drop_option_each">
+                      <i class='fas fa-image' style='font-size:24px'></i>
+                      <div>Photo</div>
+                  </div>
+                  <div class="post_unit_drop_option_each">
+                      <i class='fas fa-grin-beam' style='font-size:24px'></i>
+                      <div>Emoji</div>
+                  </div>
+                </div>                
+                <button id="post_button">Post</button>
+              </div><!-- end drop -->
+            </div> <!-- end post -->
+
+            <!-- start posted -->
+            <div class="posted_unit">
+                <div class="posted_unit_image">
+                    <img src="/images/zoro00.jpg">
+                </div>
+                <div class="posted_unit_friend_name"><%= firstname+" "+nickname %></div>
+                <div class="posted_unit_text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit alias error illum provident neque. Cum officia fuga odio saepe, excepturi dolorem debitis esse eveniet nihil eaque, soluta similique blanditiis ut?</div>
+                <div class="posted_unit_photo">
+                  <img src="/images/photo02.webp">
+                </div>                
+                <div class="posted_unit_extend">
+                  <div class="posted_unit_extend_like">
+                    <img src="/images/like_icon.png">
+                    <div>99 Like</div>
+                  </div>
+                  <div class="posted_unit_extend_comment">
+                    <i class="fa fa-commenting" style="font-size:24px"></i>
+                    <div>Comment</div>
+                  </div>                        
+                </div>
+                <!-- start drop -->
+                <div class="drop_comment">
+                    <div class="drop_commented_unit">
+                      <img src="/images/tent.jpg">
+                      <div><a href="/">Kittipong Tent</a>: ipsum dolor sit amet consectetur.</div>                      
+                    </div>
+                    <div class="drop_commented_unit">
+                      <img src="/images/zoro00.jpg">
+                      <div><a href="/zoro">Roronoa Zoro</a>: ipsum dolor.</div>                      
+                    </div>
+                    <div class="drop_commented_unit drop_comment_unit">
+                      <img src="/images/tent.jpg">
+                      <input type="text" placeholder="Write a comment"></input>
+                    </div>
+                </div> <!-- end drop -->
+            </div> <!-- end posted -->            
+        </div><!-- End CENTER -->
+
+        <!-- RIGHT -->
+        <div class="body_right">
+          <div id="follow" class="nav_unit nav_unit_right"> 
+            <i class="fas fa-user-plus" style='font-size:24px'></i>
+            <div>Follow</div>        
+          </div>
+          <div class="nav_unit_mark">         
+            <div>Photos</div>            
+          </div>
+          <div class="pokemon">
+            <div class="nav_unit_dist"><img src="/images/zoro01.jpg"></div>              
+            <div class="nav_unit_dist"><img src="/images/zoro02.jpg"></div>              
+            <div class="nav_unit_dist"><img src="/images/zoro03.jpg"></div>              
+            <div class="nav_unit_dist"><img src="/images/zoro04.jpg"></div>              
+            <div class="nav_unit_dist"><img src="/images/zoro05.jpg"></div>              
+            <div class="nav_unit_dist"><img src="/images/zoro06.jpg"></div>              
+          </div>
+          <div class="nav_unit_mark">         
+            <div>Mutual Friends</div>            
+          </div>
+          <div class="pokemon">
+            <div class="nav_unit_dist"><img src="/images/sh01.jpg"></div>              
+            <div class="nav_unit_dist"><img src="/images/sh02.jpg"></div>              
+            <div class="nav_unit_dist"><img src="/images/sh03.jpg"></div>              
+            <div class="nav_unit_dist"><img src="/images/sh04.jpg"></div>              
+            <div class="nav_unit_dist"><img src="/images/sh05.jpg"></div>              
+            <div class="nav_unit_dist"><img src="/images/sh06.jpg"></div>              
+          </div>
+          
+                 
+        </div>
+              
+    </div>
+
+
+
+
+    
+  </body>
+</html>
